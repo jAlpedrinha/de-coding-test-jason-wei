@@ -186,17 +186,35 @@ D --> task3[Task3: TotalMileage by Driver] --> task4[Task4:Most Active Driver]
 - **Output:** Optional JourneyMetadata matching the specified duration range.
 - Filters journeys based on duration criteria.
 
-### 5.1.3). task1:
+
+### 5.1.3). aggregateByDriver:
+- **Input:**  List of JourneyMetadata.
+- **Output:** Map[String, Double] containing total mileage per driver.
+- Function to aggregate and calculate total mileage driven by each driver based on provided journey data. Uses functional programming techniques to group journeys by driver ID and compute cumulative distances.
+
+### 5.1.4). task1:
 - **Input:** List of JourneyMetadata, duration threshold.
 - **Output:** Prints journeys meeting the specified duration threshold.
 - Utility function to query and print journeys based on a duration threshold.
 
-### 5.1.4). task3:
+
+### 5.1.5). task2:
+- **Input:**  List of JourneyMetadata.
+- **Output:** Prints average speed per journey in kilometers per hour (kph).
+- Computes and prints the average speed for each journey in a given list of JourneyMetadata objects. Provides insights into driving behaviors and performance metrics derived from telemetry data.
+
+### 5.1.6). task3:
 - **Input:** List of JourneyMetadata.
 - **Output:** Map of driver IDs to total mileage.
-- Computes total mileage driven by each driver for the given day.
+- Computes total mileage driven by each driver for the given day. And prints the results
 
-### 5.1.5). printJourney, printJourneyList:
+### 5.1.7). task4:
+- **Input:**  Map[String, Double] containing total mileage per driver.
+- **Output:** Prints the driver with the highest total mileage.
+- Identifies and prints the driver who has driven the greatest total distance based on the aggregated mileage data. Essential for determining the most active driver and assessing their contribution within a dataset of JourneyMetadata.
+
+
+### 5.1.8). printJourney, printJourneyList:
 - Utility functions to print individual journeys or lists of journeys with formatted details.
 
 ## 5.2). Dependencies
