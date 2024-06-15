@@ -36,6 +36,35 @@
             <version>${scalatest.version}</version>
             <scope>test</scope>
         </dependency>
+
+        <!-- Java Time API -->
+        <dependency>
+            <groupId>org.scala-lang.modules</groupId>
+            <artifactId>scala-java8-compat_2.11</artifactId>
+            <version>0.9.1</version>
+        </dependency>
+
+        <!-- Scala IO -->
+        <dependency>
+            <groupId>com.madgag</groupId>
+            <artifactId>scala-io-file_2.11</artifactId>
+            <version>0.4.2</version>
+        </dependency>
+
+        <!-- Scala Logging -->
+        <dependency>
+            <groupId>com.typesafe.scala-logging</groupId>
+            <artifactId>scala-logging_2.11</artifactId>
+            <version>3.9.4</version>
+        </dependency>
+
+        <!-- JUnit for ScalaTest -->
+        <dependency>
+            <groupId>org.scalatest</groupId>
+            <artifactId>scalatest-junit_2.11</artifactId>
+            <version>3.0.0-SNAP13</version>
+        </dependency>
+
     </dependencies>
 
     <build>
