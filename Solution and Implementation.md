@@ -1,6 +1,19 @@
 # Task Links
+1. Task Srouce:
 [Data Engineering coding test]( https://github.com/overseaworld/de-coding-test-jason-wei)
 
+2. Run the following command first:
+```bash
+# Entry the repository
+cd de-coding-test-jason-wei/
+
+# main 
+scala src/main/java/ai/humn/telematics/ProcessDataFile.scala src/test/resources/2021-10-05_journeys.csv 2021-10-05
+
+# unittest
+scala src/test/java/ai/humn/telematics/ProcessDataFileTest.scala src/test/resources/2021-10-05_journeys.csv 2021-10-05
+
+```
 # How to approach this task
 Here is the main steps to approach this task:
 ```mermaid
