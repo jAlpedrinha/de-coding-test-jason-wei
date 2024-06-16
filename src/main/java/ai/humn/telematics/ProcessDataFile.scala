@@ -1,12 +1,13 @@
 package ai.humn.telematics
 import java.time.format.DateTimeFormatter
-import java.time.{LocalDateTime, ZoneId}
+import java.time.{LocalDateTime, ZoneId, Duration}
 import java.util.Locale
 import java.util.logging.{Level, Logger}
 import scala.collection.mutable.ListBuffer
 import scala.io.Source
 import scala.util.Try
 import java.nio.file.Paths
+import java.time.Instant
 
 object ProcessDataFile {
   // Initialize logger
@@ -23,9 +24,6 @@ object ProcessDataFile {
 
   // Other driver behavior fields also can be precomputed if needed.
   // calculate distance based on GPS and Geohash, can help detect fraud driver and adhoc query 
-  // val distanceKm_gps = calculateGPSDistanceKm(journey(4),journey(6),journey(5),journey(7)) 
-  // startGeoHash = calculateGeoHash(journey(4),journey(6))
-  // endGeoHash = calculateGeoHash(journey(5),journey(7))
   
   // Schema evolution: Define mappings for different schema versions
   // This can be configurable in the future by json file and/or command line arguments
@@ -69,8 +67,13 @@ object ProcessDataFile {
       if (journey.length == fieldToIndex.size) {
         val journeyId = journey(fieldToIndex("journeyId"))
         val driverId = journey(fieldToIndex("driverId"))
-        val startTime = LocalDateTime.parse(journey(fieldToIndex("startTime")), dateFormat)
-        val endTime = LocalDateTime.parse(journey(fieldToIndex("endTime")), dateFormat)
+
+        val startTimeMillis = journey(fieldToIndex("startTime")).toLong
+        val endTimeMillis = journey(fieldToIndex("endTime")).toLong
+        val startTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(startTimeMillis), zoneId)
+        val endTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(endTimeMillis), zoneId)
+
+
         val startOdometer = journey(fieldToIndex("startOdometer")).toDouble
         val endOdometer = journey(fieldToIndex("endOdometer")).toDouble
         val startLat = journey(fieldToIndex("startLat"))
@@ -102,7 +105,7 @@ object ProcessDataFile {
   }
 
   // Query functions by duration with start and end
-  def queryByDurationRange(journeys: List[JourneyMetadata], durationStart: Double = 90.0, durationEnd: Double = Double.MaxValue): Option[JourneyMetadata] = {
+  def queryByDurationRange(journeys: List[JourneyMetadata], durationStart: Double = 90.0, durationEnd: Double = Double.MaxValue): List[JourneyMetadata] = {
     val filteredJourneys = journeys.filter { journey =>
       val duration = journey.duration
       duration >= durationStart && duration <= durationEnd
@@ -113,7 +116,7 @@ object ProcessDataFile {
 
   // print journey
   def printJourney(journey: JourneyMetadata): Unit = {
-    println(s"journeyId: ${journey.journeyId} ${journey.driver} distance ${journey.distanceKm} durationMS  ${journey.durationMS} avgSpeed in kph was ${journey.avgSpeed}")
+    println(s"journeyId: ${journey.journeyId} ${journey.driverId} distance ${journey.distanceKm} durationMS  ${journey.durationMS} avgSpeed in kph was ${journey.avgSpeed}")
   }
 
   // print journey list
@@ -122,7 +125,7 @@ object ProcessDataFile {
   }
   
   // Task 1: 
-  def task1(journeys: List[JourneyMetadata], durationStart: decimal): Unit = {
+  def task1(journeys: List[JourneyMetadata], durationStart: Double): Unit = {
     println(s"Journeys of ${durationStart} minutes or more:")
     
     // call queryByDurationRange

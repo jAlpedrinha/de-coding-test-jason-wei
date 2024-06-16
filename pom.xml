@@ -10,65 +10,71 @@
 
     <properties>
         <scala.binary.version>2.11</scala.binary.version>
-        <scalamock.version>4.1.0</scalamock.version>
         <scala.version>2.11.12</scala.version>
-        <scalatest.version>3.0.8</scalatest.version>
+        <scalatest.version>3.3.0-SNAP4</scalatest.version>
         <junit.version>4.12</junit.version>
         <java.version>1.8</java.version>
+        <mockito.version>5.12.0</mockito.version>
+        <scalatestplus.version>1.0.0-SNAP5</scalatestplus.version>
     </properties>
 
     <dependencies>
+        <!-- Scala -->
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-library</artifactId>
             <version>${scala.version}</version>
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>${junit.version}</version>
-            <scope>test</scope>
-        </dependency>
+
+        <!-- Testing -->
         <dependency>
             <groupId>org.scalatest</groupId>
             <artifactId>scalatest_${scala.binary.version}</artifactId>
             <version>${scalatest.version}</version>
             <scope>test</scope>
         </dependency>
-
-        <!-- Java Time API -->
+        
         <dependency>
-            <groupId>org.scala-lang.modules</groupId>
-            <artifactId>scala-java8-compat_2.11</artifactId>
-            <version>0.9.1</version>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>${mockito.version}</version>
+            <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.scalatestplus</groupId>
+            <artifactId>scalatestplus-mockito_${scala.binary.version}</artifactId>
+            <version>${scalatestplus.version}</version>
+            <scope>test</scope>
+        </dependency>
+        
 
         <!-- Scala IO -->
         <dependency>
             <groupId>com.madgag</groupId>
-            <artifactId>scala-io-file_2.11</artifactId>
+            <artifactId>scala-io-file_${scala.binary.version}</artifactId>
             <version>0.4.2</version>
         </dependency>
 
         <!-- Scala Logging -->
         <dependency>
             <groupId>com.typesafe.scala-logging</groupId>
-            <artifactId>scala-logging_2.11</artifactId>
+            <artifactId>scala-logging_${scala.binary.version}</artifactId>
             <version>3.9.4</version>
         </dependency>
 
-        <!-- JUnit for ScalaTest -->
+        <!-- Scala Java 8 Compatibility -->
         <dependency>
-            <groupId>org.scalatest</groupId>
-            <artifactId>scalatest-junit_2.11</artifactId>
-            <version>3.0.0-SNAP13</version>
+            <groupId>org.scala-lang.modules</groupId>
+            <artifactId>scala-java8-compat_${scala.binary.version}</artifactId>
+            <version>0.9.1</version>
         </dependency>
-
     </dependencies>
 
     <build>
         <plugins>
+            <!-- Scala Maven Plugin -->
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>
@@ -82,7 +88,6 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <!--addScalacArgs>-target:jvm-1.8</addScalacArgs-->
                     <target>${java.version}</target>
                     <source>${java.version}</source>
                     <args>
@@ -92,6 +97,8 @@
                     </args>
                 </configuration>
             </plugin>
+
+            <!-- Maven Surefire Plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -111,6 +118,4 @@
             </plugin>
         </plugins>
     </build>
-
-
 </project>
