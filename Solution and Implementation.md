@@ -216,7 +216,7 @@ D --> task3[Task3: TotalMileage by Driver] --> task4[Task4:Most Active Driver]
 - **Output:** Prints average speed per journey in kilometers per hour (kph), which avgSpeed is between avgSpeedStart and avgSpeedEnd.
 - Computes and return the average speed for each journey in a given list of JourneyMetadata objects. Provides insights into driving behaviors and performance metrics derived from telemetry data.
 
-### 5.1.8). printJourney, printJourneyList:
+### 5.1.6). printJourney, printJourneyList:
 - Utility functions to print individual journeys or lists of journeys with formatted details.
 
 ## 5.2). Dependencies
