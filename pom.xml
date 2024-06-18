@@ -1,84 +1,53 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         
     <modelVersion>4.0.0</modelVersion>
-
-    <groupId>groupId</groupId>
-    <artifactId>de-interview</artifactId>
+    
+    <groupId>com.example</groupId>
+    <artifactId>de-coding-test-jason-wei</artifactId>
     <version>1.0-SNAPSHOT</version>
-
+    
     <properties>
-        <scala.binary.version>2.11</scala.binary.version>
         <scala.version>2.11.12</scala.version>
-        <scalatest.version>3.3.0-SNAP4</scalatest.version>
+        <scala.compat.version>2.11</scala.compat.version>
+        <scalatest.version>3.2.9</scalatest.version>
         <junit.version>4.12</junit.version>
-        <java.version>1.8</java.version>
-        <mockito.version>5.12.0</mockito.version>
-        <scalatestplus.version>1.0.0-SNAP5</scalatestplus.version>
     </properties>
-
+    
     <dependencies>
-        <!-- Scala -->
+        <!-- Scala library -->
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-library</artifactId>
             <version>${scala.version}</version>
-            <scope>provided</scope>
         </dependency>
 
-        <!-- Testing -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- ScalaTest -->
         <dependency>
             <groupId>org.scalatest</groupId>
-            <artifactId>scalatest_${scala.binary.version}</artifactId>
+            <artifactId>scalatest_${scala.compat.version}</artifactId>
             <version>${scalatest.version}</version>
             <scope>test</scope>
         </dependency>
-        
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <version>${mockito.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.scalatestplus</groupId>
-            <artifactId>scalatestplus-mockito_${scala.binary.version}</artifactId>
-            <version>${scalatestplus.version}</version>
-            <scope>test</scope>
-        </dependency>
-        
-
-        <!-- Scala IO -->
-        <dependency>
-            <groupId>com.madgag</groupId>
-            <artifactId>scala-io-file_${scala.binary.version}</artifactId>
-            <version>0.4.2</version>
-        </dependency>
-
-        <!-- Scala Logging -->
-        <dependency>
-            <groupId>com.typesafe.scala-logging</groupId>
-            <artifactId>scala-logging_${scala.binary.version}</artifactId>
-            <version>3.9.4</version>
-        </dependency>
-
-        <!-- Scala Java 8 Compatibility -->
-        <dependency>
-            <groupId>org.scala-lang.modules</groupId>
-            <artifactId>scala-java8-compat_${scala.binary.version}</artifactId>
-            <version>0.9.1</version>
-        </dependency>
     </dependencies>
-
+    
     <build>
+        <sourceDirectory>src/main/java</sourceDirectory>
+        <testSourceDirectory>src/test/java</testSourceDirectory>
+        
         <plugins>
-            <!-- Scala Maven Plugin -->
+            <!-- Scala compiler plugin -->
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>
-                <version>4.3.0</version>
+                <version>4.4.0</version>
                 <executions>
                     <execution>
                         <goals>
@@ -86,19 +55,9 @@
                             <goal>testCompile</goal>
                         </goals>
                     </execution>
+                    
                 </executions>
-                <configuration>
-                    <target>${java.version}</target>
-                    <source>${java.version}</source>
-                    <args>
-                        <arg>-nobootcp</arg>
-                        <arg>-deprecation</arg>
-                        <arg>-feature</arg>
-                    </args>
-                </configuration>
             </plugin>
-
-            <!-- Maven Surefire Plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>

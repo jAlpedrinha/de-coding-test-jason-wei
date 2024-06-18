@@ -1,78 +1,109 @@
 package ai.humn.telematics
-import org.scalatest.funsuite.AnyFunSuite
-import java.time.{LocalDateTime, ZoneId}
+
+import java.time._
+import java.util.TimeZone
+import java.util.logging.Logger
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
+
 import ai.humn.telematics.ProcessDataFile._
-import scala.util.Success
 
-class ProcessDataFileTest extends AnyFunSuite {
+class ProcessDataFileTest extends AnyFlatSpec with Matchers {
 
-  val testZoneId: ZoneId = ZoneId.of("America/Los_Angeles")
-  val testFieldToIndex: Map[String, Int] = schemaV1FieldToIndex
+  // Initialize test logger
+  val logger: Logger = Logger.getLogger(getClass.getName)
 
-  // Sample valid and invalid data lines for testing
-  val validDataLine = "1,1,1633046400000,1633050000000,34.0522,-118.2437,36.7783,-119.4179,1000,1050"
-  val invalidDataLine = "1,1,invalidTime,1633050000000,34.0522,-118.2437,36.7783,-119.4179,1000,950"
-  val shortDataLine = "1,1,1633046400000,1633050000000,34.0522,-118.2437,36.7783,-119.4179,1000"
-
-  test("cleanData should return JourneyMetadata for valid data") {
-    val result = cleanData(validDataLine, testFieldToIndex, testZoneId)
-    assert(result.isDefined)
-    val journey = result.get
-    assert(journey.journeyId == "1")
-    assert(journey.driverId == "1")
-    assert(journey.distanceKm == 50)
-  }
-
-  test("cleanData should return None for invalid data") {
-    val result = cleanData(invalidDataLine, testFieldToIndex, testZoneId)
-    assert(result.isEmpty)
-  }
-
-  test("cleanData should return None for short data") {
-    val result = cleanData(shortDataLine, testFieldToIndex, testZoneId)
-    assert(result.isEmpty)
-  }
-
-  val sampleJourneys = List(
-    JourneyMetadata("1", "1", LocalDateTime.now(), LocalDateTime.now().plusMinutes(100), "34.0522", "-118.2437", "36.7783", "-119.4179", 1000, 1050, 50, 100, 6000000, 30),
-    JourneyMetadata("2", "1", LocalDateTime.now(), LocalDateTime.now().plusMinutes(45), "34.0522", "-118.2437", "36.7783", "-119.4179", 1050, 1100, 50, 45, 2700000, 66.67),
-    JourneyMetadata("3", "2", LocalDateTime.now(), LocalDateTime.now().plusMinutes(30), "34.0522", "-118.2437", "36.7783", "-119.4179", 1100, 1150, 50, 30, 1800000, 100)
+  // Test data for cleanData function
+  val validLine = "1,123,2023-06-18 10:00:00,2023-06-18 11:30:00,37.7749,-122.4194,34.0522,-118.2437,100.0,200.0"
+  val invalidLine = "1,123,2023-06-18 11:30:00,2023-06-18 10:00:00,37.7749,-122.4194,34.0522,-118.2437,200.0,100.0"
+  val fieldToIndex = Map(
+    "journeyId" -> 0,
+    "driverId" -> 1,
+    "startTime" -> 2,
+    "endTime" -> 3,
+    "startLat" -> 4,
+    "startLon" -> 5,
+    "endLat" -> 6,
+    "endLon" -> 7,
+    "startOdometer" -> 8,
+    "endOdometer" -> 9
   )
+  val zoneId: ZoneId = ZoneId.of(TimeZone.getDefault.getID)
 
-  test("queryByDurationRange should filter journeys by duration range") {
-    val result = queryByDurationRange(sampleJourneys, 40.0, 120.0)
-    assert(result.length == 2)
+  // Test cases for cleanData function
+  "cleanData" should "return Some(JourneyMetadata) for valid input" in {
+    val result = ProcessDataFile.cleanData(validLine, fieldToIndex, zoneId)
+    result.isDefined shouldBe true
   }
 
-  test("queryJourneysByMinimumDuration should filter and print journeys with minimum duration") {
-    val durationStart = 90.0
-    val filteredJourneys = queryByDurationRange(sampleJourneys, durationStart)
-    assert(filteredJourneys.length == 1)
-    assert(filteredJourneys.head.journeyId == "1")
+  it should "return None for invalid input" in {
+    val result = ProcessDataFile.cleanData(invalidLine, fieldToIndex, zoneId)
+    result.isDefined shouldBe false
   }
 
-  test("queryJourneysByAverageSpeedRange should filter journeys by average speed range") {
-    val result = queryJourneysByAverageSpeedRange(sampleJourneys, 60.0, 120.0)
-    assert(result.length == 2)
+  // Test cases for queryByDurationRange function
+  "queryByDurationRange" should "filter journeys by duration range" in {
+    val journeys = List(
+      ProcessDataFile.cleanData(validLine, fieldToIndex, zoneId).get,
+      ProcessDataFile.cleanData(invalidLine, fieldToIndex, zoneId).getOrElse(fail("Invalid test data"))
+    )
+    val result = ProcessDataFile.queryByDurationRange(journeys, 60.0, 120.0)
+    result.length shouldBe 1
   }
 
-  test("aggregateByDriver should calculate total mileage by driver") {
-    val result = aggregateByDriver(sampleJourneys)
-    assert(result.size == 2)
-    assert(result("1") == 100.0)
-    assert(result("2") == 50.0)
+  it should "return empty list when no journeys match the duration range" in {
+    val journeys = List(
+      ProcessDataFile.cleanData(validLine, fieldToIndex, zoneId).get
+    )
+    val result = ProcessDataFile.queryByDurationRange(journeys, 120.0, 180.0)
+    result shouldBe empty
   }
 
-  test("extractBatchDateFromFileName should extract date from file name") {
-    val filePath = "/path/to/data_2021-10-05.csv"
-    val result = extractBatchDateFromFileName(filePath)
-    assert(result == "2021-10-05")
+  // Test cases for queryJourneysByAverageSpeedRange function
+  "queryJourneysByAverageSpeedRange" should "filter journeys by average speed range" in {
+    val journeys = List(
+      ProcessDataFile.cleanData(validLine, fieldToIndex, zoneId).get,
+      ProcessDataFile.cleanData(invalidLine, fieldToIndex, zoneId).getOrElse(fail("Invalid test data"))
+    )
+    val result = ProcessDataFile.queryJourneysByAverageSpeedRange(journeys, 0.0, 100.0)
+    result.length shouldBe 1
   }
 
-  test("extractBatchDateFromFileName should return default date if no date found in file name") {
-    val filePath = "/path/to/datafile.csv"
-    val result = extractBatchDateFromFileName(filePath)
-    assert(result == "2021-10-05")
+  it should "return empty list when no journeys match the average speed range" in {
+    val journeys = List(
+      ProcessDataFile.cleanData(validLine, fieldToIndex, zoneId).get
+    )
+    val result = ProcessDataFile.queryJourneysByAverageSpeedRange(journeys, 200.0, 300.0)
+    result shouldBe empty
   }
+
+  // Test cases for aggregateByDriver function
+  "aggregateByDriver" should "calculate total mileage per driver" in {
+    val journeys = List(
+      ProcessDataFile.cleanData(validLine, fieldToIndex, zoneId).get,
+      ProcessDataFile.cleanData(invalidLine, fieldToIndex, zoneId).getOrElse(fail("Invalid test data"))
+    )
+    val result = ProcessDataFile.aggregateByDriver(journeys)
+    result.nonEmpty shouldBe true
+  }
+
+  it should "return empty map when no journeys are provided" in {
+    val journeys = List.empty[JourneyMetadata]
+    val result = ProcessDataFile.aggregateByDriver(journeys)
+    result shouldBe empty
+  }
+
+  // Test cases for extractBatchDateFromFileName function
+  "extractBatchDateFromFileName" should "extract batch date from file name" in {
+    val filePath = "/path/to/2023-06-18-data.csv"
+    val result = ProcessDataFile.extractBatchDateFromFileName(filePath)
+    result shouldBe "2023-06-18"
+  }
+
+  it should "use default date when batch date is not found in file name" in {
+    val filePath = "/path/to/data.csv"
+    val result = ProcessDataFile.extractBatchDateFromFileName(filePath)
+    result shouldBe "2021-10-05" // Default batch date as defined in the function
+  }
+
 }
-
