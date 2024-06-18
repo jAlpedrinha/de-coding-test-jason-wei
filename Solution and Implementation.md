@@ -2,10 +2,23 @@
 1. Task Srouce:
 [Data Engineering coding test]( https://github.com/overseaworld/de-coding-test-jason-wei)
 
-2. Run the following command first:
+2. Quick guides
+```table
+| task list |             description                          |             function            |
+| --------- | ------------------------------------------------ | ------------------------------- |
+| task1     | find all journeys whose average speed >= 90 mins | queryJourneysByMinimumDuration  |
+|           |                                                  | --> queryByDurationRange        |
+| task2     | find all journeys with average speed(defaul all) | queryJourneysByAverageSpeedRange|
+| task3     | get total mileage for each driver                | aggregateByDriver               |
+| task4     | get the most active driver has top1 total mileage| max the result of task3         |
+```
+
+1. Run the following command first:
 ```bash
 # Entry the repository
 cd de-coding-test-jason-wei/
+
+mvn clean install
 
 # main 
 scala src/main/java/ai/humn/telematics/ProcessDataFile.scala src/test/resources/2021-10-05_journeys.csv 2021-10-05

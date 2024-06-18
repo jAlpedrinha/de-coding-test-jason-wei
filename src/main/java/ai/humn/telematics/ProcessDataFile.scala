@@ -117,7 +117,7 @@ object ProcessDataFile {
 
   // print journey
   def printJourney(journey: JourneyMetadata): Unit = {
-    println(s"journeyId: ${journey.journeyId} ${journey.driverId} distance ${journey.distanceKm} durationMS  ${journey.durationMS} avgSpeed in kph was ${journey.avgSpeed}")
+    println(f"journeyId: ${journey.journeyId} ${journey.driverId} distance ${journey.distanceKm} durationMS  ${journey.durationMS} avgSpeed in kph was ${journey.avgSpeed}%.2f")
   }
 
   // print journey list
