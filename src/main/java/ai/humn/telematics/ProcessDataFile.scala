@@ -1,4 +1,5 @@
 package ai.humn.telematics
+
 import java.time.format.DateTimeFormatter
 import java.time.{LocalDateTime, ZoneId, Duration}
 import java.util.Locale
@@ -105,7 +106,7 @@ object ProcessDataFile {
   }
 
   // Query functions by duration with start and end
-  def queryByDurationRange(journeys: List[JourneyMetadata], durationStart: Double = 90.0, durationEnd: Double = Double.MaxValue): List[JourneyMetadata] = {
+  def queryByDurationRange(journeys: List[JourneyMetadata], durationStart: Double = 0.0, durationEnd: Double = Double.MaxValue): List[JourneyMetadata] = {
     val filteredJourneys = journeys.filter { journey =>
       val duration = journey.duration
       duration >= durationStart && duration <= durationEnd
@@ -124,8 +125,8 @@ object ProcessDataFile {
     journeys.foreach(journey => printJourney(journey))
   }
   
-  // Task 1: 
-  def task1(journeys: List[JourneyMetadata], durationStart: Double): Unit = {
+  // queryJourneysByMinimumDuration
+  def queryJourneysByMinimumDuration(journeys: List[JourneyMetadata], durationStart: Double): Unit = {
     println(s"Journeys of ${durationStart} minutes or more:")
     
     // call queryByDurationRange
@@ -138,12 +139,15 @@ object ProcessDataFile {
     }
   }
 
-  // task 2: Find the average speed per journey in kph, directly from the data.
-  def task2(journeys: List[JourneyMetadata]): Unit = {
-    println("\nAverage speed per journey in kph:")
-    printJourneyList(journeys)
-  }
+  // queryJourneysByMinimumAvgSpeed: Find the average speed per journey in kph, which is between avgSpeedStart and avgSpeedEnd.
+  def queryJourneysByAverageSpeedRange(journeys: List[JourneyMetadata], avgSpeedStart: Double = 0.0 , avgSpeedEnd: Double = Double.MaxValue): List[JourneyMetadata] = {
+    val filteredJourneys = journeys.filter { journey =>
+      val avgSpeed = journey.avgSpeed
+      avgSpeed >= avgSpeedStart && avgSpeed <= avgSpeedEnd
+    }
 
+    filteredJourneys
+  }
 
   // There is some discrepancy over the whole day when data is ingested, so journey.endTime is more accurate.
   // And you do not need to wait for the long journeys to be completed, just move them to the next day.
@@ -158,29 +162,6 @@ object ProcessDataFile {
     }.toMap
 
     results
-  }
-
-
-  // task 3: Find the total mileage by driver for the whole day.
-  def task3(journeys: List[JourneyMetadata]): Map[String, Double] = {
-    println("\nTotal mileage by driver for the whole day:")
-    val groupedMileage = aggregateByDriver(journeys)
-    groupedMileage.foreach { case (driverId, totalMileage) =>
-      println(s"$driverId drove $totalMileage kilometers")
-    }
-    groupedMileage
-  }
-
-
-  // task 4: Find the most active driver from the result of task 3
-  def task4(groupedMileage: Map[String, Double]): Unit = {
-    println("\nMost active driver - the driver who has driven the most kilometers:")
-    if (groupedMileage.nonEmpty) {
-      val mostActiveDriver = groupedMileage.maxBy(_._2)._1
-      println(s"Most active driver is $mostActiveDriver")
-    } else {
-      println("No journeys found.")
-    }
   }
 
   // Function to extract batch date from file name
@@ -220,16 +201,30 @@ object ProcessDataFile {
     // Task 1: Find journeys that are 90 minutes or more
     // durationStart as parameter for future adjustment
     val durationStart = 90.0
-    task1(journeys, durationStart)
+    queryJourneysByMinimumDuration(journeys, durationStart)
     
     // Task 2: Find the average speed per journey in kph
-    task2(journeys)
+    println("\nAverage speed per journey in kph:")
+    val avgSpeedStart = 0.0
+    val avgSpeedEnd = Double.MaxValue 
+    val filteredJourneys = queryJourneysByAverageSpeedRange(journeys, avgSpeedStart, avgSpeedEnd)
+    printJourneyList(filteredJourneys)
 
     // Task 3: Find the total mileage by driver for the whole day
-    val groupedMileage = task3(journeys)
+    println("\nTotal mileage by driver for the whole day:")
+    val groupedMileage = aggregateByDriver(journeys)
+    groupedMileage.foreach { case (driverId, totalMileage) =>
+      println(s"$driverId drove $totalMileage kilometers")
+    }
 
     // Task 4: Find the most active driver - the driver who has driven the most kilometers
-    task4(groupedMileage)
+    println("\nMost active driver - the driver who has driven the most kilometers:")
+    if (groupedMileage.nonEmpty) {
+      val mostActiveDriver = groupedMileage.maxBy(_._2)._1
+      println(s"Most active driver is $mostActiveDriver")
+    } else {
+      println("No journeys found.")
+    }
   
     // println("\nTask 1 - 4 have done. Thank you for your time and effort! Have a good time! ")
   }
