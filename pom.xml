@@ -1,49 +1,53 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         
     <modelVersion>4.0.0</modelVersion>
-
-    <groupId>groupId</groupId>
-    <artifactId>de-interview</artifactId>
+    
+    <groupId>com.example</groupId>
+    <artifactId>de-coding-test-jason-wei</artifactId>
     <version>1.0-SNAPSHOT</version>
-
+    
     <properties>
-        <scala.binary.version>2.11</scala.binary.version>
-        <scalamock.version>4.1.0</scalamock.version>
         <scala.version>2.11.12</scala.version>
-        <scalatest.version>3.0.8</scalatest.version>
+        <scala.compat.version>2.11</scala.compat.version>
+        <scalatest.version>3.2.9</scalatest.version>
         <junit.version>4.12</junit.version>
-        <java.version>1.8</java.version>
     </properties>
-
+    
     <dependencies>
+        <!-- Scala library -->
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-library</artifactId>
             <version>${scala.version}</version>
-            <scope>provided</scope>
         </dependency>
+
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
+        <!-- ScalaTest -->
         <dependency>
             <groupId>org.scalatest</groupId>
-            <artifactId>scalatest_${scala.binary.version}</artifactId>
+            <artifactId>scalatest_${scala.compat.version}</artifactId>
             <version>${scalatest.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
-
+    
     <build>
+        <sourceDirectory>src/main/java</sourceDirectory>
+        <testSourceDirectory>src/test/java</testSourceDirectory>
+        
         <plugins>
+            <!-- Scala compiler plugin -->
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>
-                <version>4.3.0</version>
+                <version>4.4.0</version>
                 <executions>
                     <execution>
                         <goals>
@@ -51,17 +55,8 @@
                             <goal>testCompile</goal>
                         </goals>
                     </execution>
+                    
                 </executions>
-                <configuration>
-                    <!--addScalacArgs>-target:jvm-1.8</addScalacArgs-->
-                    <target>${java.version}</target>
-                    <source>${java.version}</source>
-                    <args>
-                        <arg>-nobootcp</arg>
-                        <arg>-deprecation</arg>
-                        <arg>-feature</arg>
-                    </args>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -82,6 +77,4 @@
             </plugin>
         </plugins>
     </build>
-
-
 </project>
