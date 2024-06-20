@@ -9,23 +9,12 @@ import scala.io.Source
 import scala.util.Try
 import java.nio.file.Paths
 import java.time.Instant
+import java.io.{BufferedReader, FileReader}
 
 object ProcessDataFile {
   // Initialize logger
   val logger: Logger = Logger.getLogger(getClass.getName)
 
-
-  // ------------------------1.Data Validation, Data Clean, and Precompute Metrics---------------------------------------
-  // This is a collection of the journey lines with precomputed metrics
-  // Benefits:
-  // 1.Improved Code Readability and Maintainability: Simplified Logic; Reduced Complexity;
-  // 2.Performance Optimization: Single Pass Calculation; Less Repetition;
-  // 3.Error Reduction:Consistency;Debugging;
-  // 4.Scalability:Ease of Expansion; Precomputing and storing derived values makes it easier to handle batch processing or parallel processing
-
-  // Other driver behavior fields also can be precomputed if needed.
-  // calculate distance based on GPS and Geohash, can help detect fraud driver and adhoc query 
-  
   // Schema evolution: Define mappings for different schema versions
   // This can be configurable in the future by json file and/or command line arguments
   val schemaV1FieldToIndex: Map[String, Int] = Map(
@@ -129,7 +118,6 @@ object ProcessDataFile {
   def queryJourneysByMinimumDuration(journeys: List[JourneyMetadata], durationStart: Double): Unit = {
     println(s"Journeys of ${durationStart} minutes or more:")
     
-    // call queryByDurationRange
     val filteredJourneys = queryByDurationRange(journeys, durationStart)
 
     if (filteredJourneys.nonEmpty) {
@@ -139,7 +127,7 @@ object ProcessDataFile {
     }
   }
 
-  // queryJourneysByMinimumAvgSpeed: Find the average speed per journey in kph, which is between avgSpeedStart and avgSpeedEnd.
+  // queryJourneysByAverageSpeedRange: Find the average speed per journey in kph, which is between avgSpeedStart and avgSpeedEnd.
   def queryJourneysByAverageSpeedRange(journeys: List[JourneyMetadata], avgSpeedStart: Double = 0.0 , avgSpeedEnd: Double = Double.MaxValue): List[JourneyMetadata] = {
     val filteredJourneys = journeys.filter { journey =>
       val avgSpeed = journey.avgSpeed
@@ -164,6 +152,11 @@ object ProcessDataFile {
     results
   }
 
+  // Function to find the most active driver
+  def findMostActiveDriver(aggregateData: Map[String, Double]): (String, Double) = {
+    aggregateData.maxBy(_._2)
+  }
+  
   // Function to extract batch date from file name
   def extractBatchDateFromFileName(filePath: String): String = {
     val fileName = Paths.get(filePath).getFileName.toString
@@ -174,29 +167,50 @@ object ProcessDataFile {
     }
   }
 
-  def main(args: Array[String]): Unit = {
-    if (args.length < 1) {
-      println("Usage: ProcessDataFile <file-path> <batch-date>")
-      System.exit(1)
-    }
-
-    val filePath = args(0)
-    val batchDate = if (args.length > 1) args(1) else extractBatchDateFromFileName(filePath)
-    println(s"Batch Date: $batchDate")
+  // Function to read lines from file
+  def readLinesFromFile(filePath: String, withHeader: Boolean = true): List[String] = {
+    var reader: BufferedReader = null
+    var lines = new ListBuffer[String]()
     
-    // Timezone also can be a configurable field.
-    // More timezones: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
-    // For example: "America/Los_Angeles"
-    val zoneId = ZoneId.of("America/Los_Angeles")
+    try {
+      reader = new BufferedReader(new FileReader(filePath))
+      var line: String = null
 
+      // Skip the first line if withHeader is true
+      var isFirstLine = false 
+      if (withHeader) {
+        isFirstLine = true
+      }
+      
+      while ({ line = reader.readLine(); line != null }) {
+        if (isFirstLine) {
+          isFirstLine = false
+        } else {
+          lines += line.trim 
+        }
+      }
+    } catch {
+      case e: Exception => println(s"Error reading file: ${e.getMessage}")
+    } finally {
+      if (reader != null) {
+        try {
+          reader.close()
+        } catch {
+          case e: Exception => println(s"Error closing reader: ${e.getMessage}")
+        }
+      }
+    }
+    
+    // Convert to list and remove duplicates
+    lines.toList.distinct  
+  }
+
+  def processFile(filePath: String, batchDate: String, zoneId: ZoneId): Unit = {
     // Read file
-    val lines = Source.fromFile(filePath).getLines().toList
-
-    // Clean and parse data
-    val journeys = lines.flatMap(line => cleanData(line, schemaV1FieldToIndex, zoneId))
-    // Of course, we can persist the cleaned data to HDFS as a DWD layer in Datawarehouse.
-    // But let's just skip this. and print the cleaned data later from task2.
-
+    val withHeader = true
+    val lines = readLinesFromFile(filePath)
+    
+    val journeys = lines.flatMap(line => cleanData(line.toString, schemaV1FieldToIndex, zoneId))
 
     // Task 1: Find journeys that are 90 minutes or more
     // durationStart as parameter for future adjustment
@@ -212,19 +226,36 @@ object ProcessDataFile {
 
     // Task 3: Find the total mileage by driver for the whole day
     println("\nTotal mileage by driver for the whole day:")
-    val groupedMileage = aggregateByDriver(journeys)
-    groupedMileage.foreach { case (driverId, totalMileage) =>
+    val totalMileageByDriver = aggregateByDriver(journeys)
+    totalMileageByDriver.foreach { case (driverId, totalMileage) =>
       println(s"$driverId drove $totalMileage kilometers")
     }
 
     // Task 4: Find the most active driver - the driver who has driven the most kilometers
     println("\nMost active driver - the driver who has driven the most kilometers:")
-    if (groupedMileage.nonEmpty) {
-      val mostActiveDriver = groupedMileage.maxBy(_._2)._1
-      println(s"Most active driver is $mostActiveDriver")
-    } else {
-      println("No journeys found.")
+    val mostActiveDriver = findMostActiveDriver(totalMileageByDriver)
+    println(s"Most active driver is ${mostActiveDriver._1}")
+  }
+
+  def main(args: Array[String]): Unit = {
+    if (args.length < 1) {
+      println("Usage: ProcessDataFile <file-path> <batch-date>")
+      System.exit(1)
     }
+
+    val filePath = args(0)
+    val batchDate = if (args.length > 1) args(1) else extractBatchDateFromFileName(filePath)
+    println(s"Batch Date: $batchDate")
+    
+    // Timezone also can be a configurable field.
+    // This can be configured in the future by json file and/or command line arguments
+    val zoneId = ZoneId.of("America/Los_Angeles")
+
+    try {
+      processFile(filePath, batchDate, zoneId)
+    } catch { 
+      case e: Exception => println(s"Error: ${e.getMessage}")
+    } 
   
     // println("\nTask 1 - 4 have done. Thank you for your time and effort! Have a good time! ")
   }
