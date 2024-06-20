@@ -168,42 +168,57 @@ object ProcessDataFile {
   }
 
   // Function to read lines from file
-  def readLinesFromFile(filePath: String, withHeader: Boolean = true): List[String] = {
-    var reader: BufferedReader = null
-    var lines = new ListBuffer[String]()
-    
-    try {
-      reader = new BufferedReader(new FileReader(filePath))
-      var line: String = null
+  private def readLinesFromFile(filePath: String, withHeader: Boolean = true): List[String] = {
+    val lines = Source.fromFile(filePath)
+      .getLines()
+      .filterNot(_.isEmpty) // Filter empty lines
+      .toSet // Use Set for efficient deduplication
+      .toList // Convert back to List
 
-      // Skip the first line if withHeader is true
-      var isFirstLine = false 
-      if (withHeader) {
-        isFirstLine = true
-      }
-      
-      while ({ line = reader.readLine(); line != null }) {
-        if (isFirstLine) {
-          isFirstLine = false
-        } else {
-          lines += line.trim 
-        }
-      }
-    } catch {
-      case e: Exception => println(s"Error reading file: ${e.getMessage}")
-    } finally {
-      if (reader != null) {
-        try {
-          reader.close()
-        } catch {
-          case e: Exception => println(s"Error closing reader: ${e.getMessage}")
-        }
-      }
+    if (withHeader) {
+      lines.drop(1)
+    } else {
+      lines
     }
-    
-    // Convert to list and remove duplicates
-    lines.toList.distinct  
   }
+
+  // Function to read lines from file
+  // def readLinesFromFile(filePath: String, withHeader: Boolean = true): List[String] = {
+  //   var reader: BufferedReader = null
+  //   var lines = new ListBuffer[String]()
+    
+  //   try {
+  //     reader = new BufferedReader(new FileReader(filePath))
+  //     var line: String = null
+
+  //     // Skip the first line if withHeader is true
+  //     var isFirstLine = false 
+  //     if (withHeader) {
+  //       isFirstLine = true
+  //     }
+      
+  //     while ({ line = reader.readLine(); line != null }) {
+  //       if (isFirstLine) {
+  //         isFirstLine = false
+  //       } else {
+  //         lines += line.trim 
+  //       }
+  //     }
+  //   } catch {
+  //     case e: Exception => println(s"Error reading file: ${e.getMessage}")
+  //   } finally {
+  //     if (reader != null) {
+  //       try {
+  //         reader.close()
+  //       } catch {
+  //         case e: Exception => println(s"Error closing reader: ${e.getMessage}")
+  //       }
+  //     }
+  //   }
+    
+  //   // Convert to list and remove duplicates
+  //   lines.toList.distinct  
+  // }
 
   def processFile(filePath: String, batchDate: String, zoneId: ZoneId): Unit = {
     // Read file
