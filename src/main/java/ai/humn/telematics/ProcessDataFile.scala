@@ -182,44 +182,6 @@ object ProcessDataFile {
     }
   }
 
-  // Function to read lines from file
-  // def readLinesFromFile(filePath: String, withHeader: Boolean = true): List[String] = {
-  //   var reader: BufferedReader = null
-  //   var lines = new ListBuffer[String]()
-    
-  //   try {
-  //     reader = new BufferedReader(new FileReader(filePath))
-  //     var line: String = null
-
-  //     // Skip the first line if withHeader is true
-  //     var isFirstLine = false 
-  //     if (withHeader) {
-  //       isFirstLine = true
-  //     }
-      
-  //     while ({ line = reader.readLine(); line != null }) {
-  //       if (isFirstLine) {
-  //         isFirstLine = false
-  //       } else {
-  //         lines += line.trim 
-  //       }
-  //     }
-  //   } catch {
-  //     case e: Exception => println(s"Error reading file: ${e.getMessage}")
-  //   } finally {
-  //     if (reader != null) {
-  //       try {
-  //         reader.close()
-  //       } catch {
-  //         case e: Exception => println(s"Error closing reader: ${e.getMessage}")
-  //       }
-  //     }
-  //   }
-    
-  //   // Convert to list and remove duplicates
-  //   lines.toList.distinct  
-  // }
-
   def processFile(filePath: String, batchDate: String, zoneId: ZoneId): Unit = {
     // Read file
     val withHeader = true
