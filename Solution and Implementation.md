@@ -10,7 +10,7 @@
 |           |                                                  | --> queryByDurationRange        |
 | task2     | find all journeys with average speed(defaul all) | queryJourneysByAverageSpeedRange|
 | task3     | get total mileage for each driver                | aggregateByDriver               |
-| task4     | get the most active driver has top1 total mileage| max the result of task3         |
+| task4     | get the most active driver has top1 total mileage| findMostActiveDriver            |
 ```
 
 1. Run the following command first:
@@ -218,13 +218,18 @@ D --> task3[Task3: TotalMileage by Driver] --> task4[Task4:Most Active Driver]
 - **Output:** Map[String, Double] containing total mileage per driver.
 - Function to aggregate and calculate total mileage driven by each driver based on provided journey data. Uses functional programming techniques to group journeys by driver ID and compute cumulative distances.
 
-### 5.1.4). queryJourneysByMinimumDuration:
+### 5.1.5). findMostActiveDriver:
+- **Input:** aggregateByDriveJourneys.
+- **Output:** Prints most active driver.
+- Utility function to query most active driver.
+  
+### 5.1.6). queryJourneysByMinimumDuration:
 - **Input:** List of JourneyMetadata, duration threshold.
 - **Output:** Prints journeys meeting the specified duration threshold.
 - Utility function to query and print journeys based on a duration threshold.
 
 
-### 5.1.5). queryJourneysByAverageSpeedRange:
+### 5.1.7). queryJourneysByAverageSpeedRange:
 - **Input:**  List of JourneyMetadate, average speed range [avgSpeedStart, avgSpeedEnd]
 - **Output:** Prints average speed per journey in kilometers per hour (kph), which avgSpeed is between avgSpeedStart and avgSpeedEnd.
 - Computes and return the average speed for each journey in a given list of JourneyMetadata objects. Provides insights into driving behaviors and performance metrics derived from telemetry data.
